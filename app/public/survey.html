@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Wing-man Survey</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" id = "myModal" role="dialog" aria-labelledby="myLargeModalLabel">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="row">
+            <h1 style = "text-align:center;">Your match is in!</h1>
+          </div>
+          <div class = "row" id = "modalContent">
+          </div>
+          <div class = 'text-center' style = "margin-bottom: 30px;">
+          <button type = "button" id = "reload" class = "btn btn-primary">Restart Survey</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id = "surveyBody" class="container col-md-10 col-md-offset-1">
+      <h1 id = "title"> Enter Some Info</h1>
+      <h2 id = "question"></h2>
+      <div id = "inputArea">
+        <form>
+          <div class="form-group">
+            <label for="">Name:</label>
+            <input type="text" class="form-control" id="name">
+          </div>
+
+          <div class="form-group">
+            <label for="">A link to a photo of yourself:</label>
+            <input type="text" class="form-control" id="photo">
+          </div>
+          <button type="submit" class="btn btn-primary" id="startSurvey">Next</button>
+        </form>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $('#startSurvey').on('click',function(){
+          var name = $('#name').val().trim();
+          var photo = $('#photo').val().trim();
+          var scores = [];
+          var questionCount = 0;
+          var questionBank =["Do you like going out often?","do you like to help others in need?","how selfless are you?"," how sharp do you dress.","Are you someone who can role solo?", "can you read situations", "Are you young and hip?", "Are you a Player or a Hater?", "are you willing to hit on your friends dates ugly friend?", "can you gather good intel through networking?"];
+          if ( name != "" && photo !="") {
+          $('#inputArea').empty();
+          $('#title').empty();
+          $('#inputArea').html("<form onsubmit= 'return false'><div class = 'form-group'><label for =''>Rate on a scale of 0 to 5 whether you disagree or agree with the statement. 5 being you absolutely agree.</label><input type= 'number' class = 'form-control' id = 'userAnswer'></div><button type = 'submit' class = 'btn btn-primary' id = 'nextQuestion'>Next</button><form>");
+          $('#title').html(" Question number " +(questionCount+1)+" of 10");
+          $('#question').html(questionBank[0]);
+          $('#nextQuestion').on('click',function(){
+            var answer = $('#userAnswer').val().trim();
+            var int = parseInt(answer);
+            if (answer != '' && int <=5 && int >= 0){
+              if (questionCount < 9){
+                questionCount++;
+                $('#userAnswer').val('');
+                scores.push(answer);
+                $('#title').empty();
+                $('#title').html(symbol+" Question number " +(questionCount+1)+" of 10");
+                $('#question').html(questionBank[questionCount]);
+              }
+              else {
+                var newUser = {
+                  name: name,
+                  photo: photo,
+                  score: scores,
+                }
+                var currentURL = window.location.origin;
+                $.post(currentURL+'/api/friends/new',newUser, function(data){
+                  $('#modalContent').html("<h3 style = 'text-align: center'>Your match is "+data.name+"</h3>"+"<img src = '"+data.photo+"' style = 'width: 200px; height: 200px; margin-left: 39%; margin-bottom: 35px;'>");
+                });
+                $('#myModal').modal('show')
+                $('#reload').on('click',function(){
+                  location.reload();
+                });
+              }
+            }
+            else {
+              alert("Please enter a number from 0 to 5");
+            }
+          });
+          }
+          else {
+            alert("please fill out the form before moving on");
+          }
+          return false;
+        })
+      });
+    </script>
+  </body>
+</html>
